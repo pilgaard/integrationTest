@@ -26,31 +26,37 @@ public class DbConn {
     private String database = "fire";
     private String username = "fire";
     private String password = "root";
-    public String navn = "emil";
 
-    private static DbConn instance;
-
-    public static DbConn getInstance() throws ClassNotFoundException, SQLException {
-        if (instance == null) {
-            instance = new DbConn();
-        }
-        return instance;
+    public DbConn() {
     }
 
     public void makeConn() throws ClassNotFoundException, SQLException {
-        //Class.forName("com.mysql.jdbc.Driver");
         String url = "jdbc:mysql://" + host + ":" + portnr + "/" + database;
         conn = DriverManager.getConnection(url, username, password);
-        stmt = conn.createStatement();
+    }
 
-        ResultSet rs = stmt.executeQuery("call getPhone(\"" + navn + "\");");
+    public int getPhone(String name) {
+        int number = 0;
+        try {
+            if (conn == null) {
 
-        // iterate through the java resultset
-        while (rs.next()) {
-            int number = rs.getInt("cell_number");
+                makeConn();
 
-            System.out.println("number = " + number);
+            }
+            stmt = conn.createStatement();
+
+            ResultSet rs = stmt.executeQuery("call getPhone(\"" + name + "\");");
+            
+            // iterate through the java resultset
+            if (rs.next()) {
+                number = rs.getInt("cell_number");
+            }
+            stmt.close();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(DbConn.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(DbConn.class.getName()).log(Level.SEVERE, null, ex);
         }
-        stmt.close();
+        return number;
     }
 }
